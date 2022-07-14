@@ -9,18 +9,31 @@
 #define PIXEL_SIZE                  20
 #define HRZ_PIXEL_COUNT             (WINDOW_WIDTH/PIXEL_SIZE)
 #define VRT_PIXEL_COUNT             (WINDOW_HEIGHT/PIXEL_SIZE)
-#define PIXEL_BORDER_THICKNESS      1
+#define PIXEL_BORDER_THICKNESS      2
 #define DEF_SNAKE_LEN               3
+
 
 class Pixel : public sf::RectangleShape 
 {
+private:
+    int pixelX;
+    int pixelY;
+
 public:
     Pixel()
     {
-        setSize(sf::Vector2f(16, 16));
-        setOutlineThickness(PIXEL_BORDER_THICKNESS);
+        setSize(sf::Vector2f(PIXEL_SIZE - 2*PIXEL_BORDER_THICKNESS, PIXEL_SIZE - 2*PIXEL_BORDER_THICKNESS));
+        setOutlineThickness(1);
+    }
+
+    void setPosition(int x, int y)
+    {
+        pixelX = x;
+        pixelY = y;
+        sf::RectangleShape::setPosition(pixelX*PIXEL_SIZE + PIXEL_BORDER_THICKNESS, pixelY*PIXEL_SIZE + PIXEL_BORDER_THICKNESS);
     }
 };
+
 
 class BorderSquare : public Pixel 
 {
@@ -46,7 +59,7 @@ public:
         const sf::Vector2f currntPosition = getPosition();
         const sf::Vector2f currentDirection = direction;
 
-        setPosition(currntPosition + currentDirection);
+        sf::RectangleShape::setPosition(currntPosition + currentDirection);
     }
 
 private:
@@ -77,20 +90,20 @@ int main()
     Food food = Food();
     for (int i = 0; i < DEF_SNAKE_LEN; i++)
     {
-        snake[i].setPosition(WINDOW_WIDTH/2 + i * PIXEL_SIZE + PIXEL_BORDER_THICKNESS, WINDOW_HEIGHT/2 + PIXEL_BORDER_THICKNESS);
+        snake[i].setPosition(HRZ_PIXEL_COUNT/2 + i, VRT_PIXEL_COUNT/2);
     }
     
     
     for(int i=0; i<HRZ_PIXEL_COUNT; i++)
     {
-        borders[HRZ_PIXEL_COUNT+i].setPosition(PIXEL_BORDER_THICKNESS + PIXEL_SIZE*i, WINDOW_HEIGHT - PIXEL_SIZE + PIXEL_BORDER_THICKNESS);
-        borders[i].setPosition(PIXEL_BORDER_THICKNESS + PIXEL_SIZE*i, PIXEL_BORDER_THICKNESS);
+        borders[HRZ_PIXEL_COUNT+i].setPosition(i, VRT_PIXEL_COUNT - 1);
+        borders[i].setPosition(i, 0);
     }
 
     for(int i=0; i<VRT_PIXEL_COUNT; i++)
     {
-        borders[2*HRZ_PIXEL_COUNT + VRT_PIXEL_COUNT+i].setPosition(WINDOW_WIDTH - PIXEL_SIZE + PIXEL_BORDER_THICKNESS, PIXEL_BORDER_THICKNESS + PIXEL_SIZE*i);
-        borders[2*HRZ_PIXEL_COUNT + i].setPosition(PIXEL_BORDER_THICKNESS, PIXEL_BORDER_THICKNESS + PIXEL_SIZE*i);
+        borders[2*HRZ_PIXEL_COUNT + VRT_PIXEL_COUNT+i].setPosition(HRZ_PIXEL_COUNT-1, i);
+        borders[2*HRZ_PIXEL_COUNT + i].setPosition(0, i);
     }
     
 
@@ -116,13 +129,13 @@ int main()
             window.draw(snake[i]);
         }
 
-        food.setPosition((rand() % HRZ_PIXEL_COUNT)*PIXEL_SIZE + PIXEL_BORDER_THICKNESS, (rand() % VRT_PIXEL_COUNT + 1)*PIXEL_SIZE + PIXEL_BORDER_THICKNESS);
+        food.setPosition(rand() % HRZ_PIXEL_COUNT, rand() % (VRT_PIXEL_COUNT));
         window.draw(food);
 
         window.display();
 
         sleep_for(nanoseconds(10));
-        sleep_until(system_clock::now() + milliseconds(1000));
+        sleep_until(system_clock::now() + milliseconds(500));
     }
     return 0;
 }
