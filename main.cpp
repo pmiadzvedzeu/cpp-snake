@@ -3,6 +3,7 @@
 #include <thread>
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
+#include <queue>
 
 #define WINDOW_HEIGHT               800
 #define WINDOW_WIDTH                1200
@@ -26,11 +27,11 @@ public:
         setOutlineThickness(1);
     }
 
-    void setPosition(int x, int y)
+    void setPixelPosition(int x, int y)
     {
         pixelX = x;
         pixelY = y;
-        sf::RectangleShape::setPosition(pixelX*PIXEL_SIZE + PIXEL_BORDER_THICKNESS, pixelY*PIXEL_SIZE + PIXEL_BORDER_THICKNESS);
+        setPosition(pixelX*PIXEL_SIZE + PIXEL_BORDER_THICKNESS, pixelY*PIXEL_SIZE + PIXEL_BORDER_THICKNESS);
     }
 };
 
@@ -48,6 +49,9 @@ public:
 class SnakePixel : public Pixel 
 {
 public:
+    sf::Vector2f direction = sf::Vector2f(-PIXEL_SIZE, 0);
+    sf::Vector2f newDirection = sf::Vector2f(-PIXEL_SIZE, 0);
+
     SnakePixel()
     {
         setOutlineColor(sf::Color::White);
@@ -59,12 +63,13 @@ public:
         const sf::Vector2f currntPosition = getPosition();
         const sf::Vector2f currentDirection = direction;
 
-        sf::RectangleShape::setPosition(currntPosition + currentDirection);
-    }
+        setPosition(currntPosition + currentDirection);
 
-private:
-    sf::Vector2f direction = sf::Vector2f(-PIXEL_SIZE, 0);
-    static int speed;
+        if (newDirection!=direction)
+        {
+            direction = newDirection;
+        }
+    }
 };
 
 class Food : public Pixel 
@@ -84,28 +89,29 @@ int main()
 
     srand (time(NULL));
 
-    sf::RenderWindow window(sf::VideoMode(1200, 800), "SFML works!");
-    BorderSquare borders[2 * (HRZ_PIXEL_COUNT+VRT_PIXEL_COUNT)];
-    SnakePixel snake[DEF_SNAKE_LEN];
-    Food food = Food();
+    sf::RenderWindow window(sf::VideoMode(1200, 800), "The Snake");
+
+    std::queue <SnakePixel> snake;
     for (int i = 0; i < DEF_SNAKE_LEN; i++)
     {
-        snake[i].setPosition(HRZ_PIXEL_COUNT/2 + i, VRT_PIXEL_COUNT/2);
+        SnakePixel snakePixel = SnakePixel();
+        snakePixel.setPixelPosition(HRZ_PIXEL_COUNT/2 + i, VRT_PIXEL_COUNT/2);
+        snake.push(snakePixel);
     }
     
-    
+    BorderSquare borders[2 * (HRZ_PIXEL_COUNT+VRT_PIXEL_COUNT)];
     for(int i=0; i<HRZ_PIXEL_COUNT; i++)
     {
-        borders[HRZ_PIXEL_COUNT+i].setPosition(i, VRT_PIXEL_COUNT - 1);
-        borders[i].setPosition(i, 0);
+        borders[HRZ_PIXEL_COUNT+i].setPixelPosition(i, VRT_PIXEL_COUNT - 1);
+        borders[i].setPixelPosition(i, 0);
     }
-
     for(int i=0; i<VRT_PIXEL_COUNT; i++)
     {
-        borders[2*HRZ_PIXEL_COUNT + VRT_PIXEL_COUNT+i].setPosition(HRZ_PIXEL_COUNT-1, i);
-        borders[2*HRZ_PIXEL_COUNT + i].setPosition(0, i);
+        borders[2*HRZ_PIXEL_COUNT + VRT_PIXEL_COUNT+i].setPixelPosition(HRZ_PIXEL_COUNT-1, i);
+        borders[2*HRZ_PIXEL_COUNT + i].setPixelPosition(0, i);
     }
-    
+
+    Food food = Food();
 
     while (window.isOpen())
     {
@@ -115,27 +121,59 @@ int main()
             if (event.type == sf::Event::Closed)
                 window.close();
         }
+        for (size_t i = 0; i < 1000; i++)
+        {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+            {
+                snake.front().direction = sf::Vector2f(0, -PIXEL_SIZE);
+                snake.front().newDirection = sf::Vector2f(0, -PIXEL_SIZE);
+            }
 
-        window.clear();
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+            {
+                snake.front().direction = sf::Vector2f(0, PIXEL_SIZE);
+                snake.front().newDirection = sf::Vector2f(0, PIXEL_SIZE);
+            }
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+            {
+                snake.front().direction = sf::Vector2f(-PIXEL_SIZE, 0);
+                snake.front().newDirection = sf::Vector2f(-PIXEL_SIZE, 0);
+            }
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+            {
+                snake.front().direction = sf::Vector2f(PIXEL_SIZE, 0);
+                snake.front().newDirection = sf::Vector2f(PIXEL_SIZE, 0);
+            }
+
+            sleep_for(nanoseconds(10));
+            sleep_until(system_clock::now() + milliseconds(1));
+        }
         
+        window.clear();
+
         for(int i=0; i < 2*(HRZ_PIXEL_COUNT+VRT_PIXEL_COUNT); i++)
         {
             window.draw(borders[i]);
         }
-        
+
         for (size_t i = 0; i < DEF_SNAKE_LEN; i++)
         {
-            snake[i].move();
-            window.draw(snake[i]);
+            snake.push(snake.front());
+            snake.pop();
+            if (i < DEF_SNAKE_LEN - 1)
+            {
+                snake.front().newDirection = snake.back().direction;
+            }
+            snake.back().move();
+            window.draw(snake.back());
         }
 
-        food.setPosition(rand() % HRZ_PIXEL_COUNT, rand() % (VRT_PIXEL_COUNT));
+        food.setPixelPosition(rand() % HRZ_PIXEL_COUNT, rand() % (VRT_PIXEL_COUNT));
         window.draw(food);
 
         window.display();
-
-        sleep_for(nanoseconds(10));
-        sleep_until(system_clock::now() + milliseconds(500));
     }
     return 0;
 }
