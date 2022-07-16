@@ -4,9 +4,10 @@
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 #include <queue>
+#include <iostream>
 
-#define WINDOW_HEIGHT               800
-#define WINDOW_WIDTH                1200
+#define WINDOW_HEIGHT               600
+#define WINDOW_WIDTH                600
 #define PIXEL_SIZE                  20
 #define HRZ_PIXEL_COUNT             (WINDOW_WIDTH/PIXEL_SIZE)
 #define VRT_PIXEL_COUNT             (WINDOW_HEIGHT/PIXEL_SIZE)
@@ -32,6 +33,10 @@ public:
         pixelX = x;
         pixelY = y;
         setPosition(pixelX*PIXEL_SIZE + PIXEL_BORDER_THICKNESS, pixelY*PIXEL_SIZE + PIXEL_BORDER_THICKNESS);
+    }
+
+    bool isMeet(Pixel anotherPixel){
+        return getPosition().x == anotherPixel.getPosition().x && getPosition().y == anotherPixel.getPosition().y;
     }
 };
 
@@ -79,6 +84,11 @@ public:
     {
         setOutlineColor(sf::Color::White);
         setFillColor(sf::Color::White);
+        relocate();
+    }
+
+    void relocate(){
+        setPixelPosition(rand() % (HRZ_PIXEL_COUNT - 2) + 1, rand() % (VRT_PIXEL_COUNT - 2) + 1);
     }
 };
 
@@ -86,10 +96,11 @@ int main()
 {
     using namespace std::this_thread; // sleep_for, sleep_until
     using namespace std::chrono; // nanoseconds, system_clock, seconds
+    int tailLen = 0;
 
     srand (time(NULL));
 
-    sf::RenderWindow window(sf::VideoMode(1200, 800), "The Snake");
+    sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "The Snake");
 
     std::queue <SnakePixel> snake;
     for (int i = 0; i < DEF_SNAKE_LEN; i++)
@@ -121,7 +132,7 @@ int main()
             if (event.type == sf::Event::Closed)
                 window.close();
         }
-        for (size_t i = 0; i < 1000; i++)
+        for (size_t i = 0; i < 200; i++)
         {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
             {
@@ -158,11 +169,11 @@ int main()
             window.draw(borders[i]);
         }
 
-        for (size_t i = 0; i < DEF_SNAKE_LEN; i++)
+        for (size_t i = 0; i < DEF_SNAKE_LEN+tailLen; i++)
         {
             snake.push(snake.front());
             snake.pop();
-            if (i < DEF_SNAKE_LEN - 1)
+            if (i < DEF_SNAKE_LEN+tailLen - 1)
             {
                 snake.front().newDirection = snake.back().direction;
             }
@@ -170,7 +181,17 @@ int main()
             window.draw(snake.back());
         }
 
-        food.setPixelPosition(rand() % HRZ_PIXEL_COUNT, rand() % (VRT_PIXEL_COUNT));
+        if (food.isMeet(snake.front()))
+        {
+            food.relocate();
+            SnakePixel tail = SnakePixel();
+            tail.direction = snake.back().direction;
+            tail.newDirection = snake.back().direction;
+            tail.setPosition(snake.back().getPosition() - tail.direction);
+            snake.push(tail);
+            window.draw(snake.back());
+            tailLen++;
+        }
         window.draw(food);
 
         window.display();
