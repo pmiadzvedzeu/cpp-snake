@@ -20,6 +20,7 @@ class Pixel : public sf::RectangleShape
 private:
     int pixelX;
     int pixelY;
+    sf::Vector2i pixelPosition;
 
 public:
     Pixel()
@@ -32,8 +33,17 @@ public:
     {
         pixelX = x;
         pixelY = y;
+        pixelPosition.x = x;
+        pixelPosition.y = y;
         setPosition(pixelX*PIXEL_SIZE + PIXEL_BORDER_THICKNESS, pixelY*PIXEL_SIZE + PIXEL_BORDER_THICKNESS);
     }
+
+    void setPixelPosition(sf::Vector2i vector)
+    {
+        setPixelPosition(vector.x, vector.y);
+    }
+
+    sf::Vector2i getPixelPosition() {return pixelPosition;}
 
     bool isMeet(Pixel anotherPixel){
         return getPosition().x == anotherPixel.getPosition().x && getPosition().y == anotherPixel.getPosition().y;
@@ -54,8 +64,8 @@ public:
 class SnakePixel : public Pixel 
 {
 public:
-    sf::Vector2f direction = sf::Vector2f(-PIXEL_SIZE, 0);
-    sf::Vector2f newDirection = sf::Vector2f(-PIXEL_SIZE, 0);
+    sf::Vector2i direction = sf::Vector2i(-1, 0);
+    sf::Vector2i newDirection = sf::Vector2i(-1, 0);
 
     SnakePixel()
     {
@@ -65,15 +75,11 @@ public:
 
     void move()
     {
-        const sf::Vector2f currntPosition = getPosition();
-        const sf::Vector2f currentDirection = direction;
+        const sf::Vector2i currntPosition = getPixelPosition();
+        const sf::Vector2i currentDirection = direction;
 
-        setPosition(currntPosition + currentDirection);
-
-        if (newDirection!=direction)
-        {
-            direction = newDirection;
-        }
+        setPixelPosition(currntPosition + currentDirection);
+        direction = newDirection;
     }
 };
 
@@ -136,26 +142,26 @@ int main()
         {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
             {
-                snake.front().direction = sf::Vector2f(0, -PIXEL_SIZE);
-                snake.front().newDirection = sf::Vector2f(0, -PIXEL_SIZE);
+                snake.front().direction = sf::Vector2i(0, -1);
+                snake.front().newDirection = sf::Vector2i(0, -1);
             }
 
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
             {
-                snake.front().direction = sf::Vector2f(0, PIXEL_SIZE);
-                snake.front().newDirection = sf::Vector2f(0, PIXEL_SIZE);
+                snake.front().direction = sf::Vector2i(0, 1);
+                snake.front().newDirection = sf::Vector2i(0, 1);
             }
 
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
             {
-                snake.front().direction = sf::Vector2f(-PIXEL_SIZE, 0);
-                snake.front().newDirection = sf::Vector2f(-PIXEL_SIZE, 0);
+                snake.front().direction = sf::Vector2i(-1, 0);
+                snake.front().newDirection = sf::Vector2i(-1, 0);
             }
 
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
             {
-                snake.front().direction = sf::Vector2f(PIXEL_SIZE, 0);
-                snake.front().newDirection = sf::Vector2f(PIXEL_SIZE, 0);
+                snake.front().direction = sf::Vector2i(1, 0);
+                snake.front().newDirection = sf::Vector2i(1, 0);
             }
 
             sleep_for(nanoseconds(10));
@@ -187,7 +193,7 @@ int main()
             SnakePixel tail = SnakePixel();
             tail.direction = snake.back().direction;
             tail.newDirection = snake.back().direction;
-            tail.setPosition(snake.back().getPosition() - tail.direction);
+            tail.setPixelPosition(snake.back().getPixelPosition() - tail.direction);
             snake.push(tail);
             window.draw(snake.back());
             tailLen++;
