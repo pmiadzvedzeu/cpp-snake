@@ -1,4 +1,3 @@
-#include <SFML/Graphics.hpp>
 #include <chrono>
 #include <thread>
 #include <stdlib.h>
@@ -6,118 +5,9 @@
 #include <queue>
 #include <iostream>
 
-#define WINDOW_HEIGHT               600
-#define WINDOW_WIDTH                600
-#define PIXEL_SIZE                  20
-#define HRZ_PIXEL_COUNT             (WINDOW_WIDTH/PIXEL_SIZE)
-#define VRT_PIXEL_COUNT             (WINDOW_HEIGHT/PIXEL_SIZE)
-#define PIXEL_BORDER_THICKNESS      2
-#define DEF_SNAKE_LEN               3
-
-class Pixel : public sf::RectangleShape 
-{
-private:
-    int pixelX;
-    int pixelY;
-    sf::Vector2i pixelPosition;
-
-public:
-    Pixel()
-    {
-        setSize(sf::Vector2f(PIXEL_SIZE - 2*PIXEL_BORDER_THICKNESS, PIXEL_SIZE - 2*PIXEL_BORDER_THICKNESS));
-        setOutlineThickness(1);
-    }
-
-    void setPixelPosition(int x, int y)
-    {
-        pixelX = x;
-        pixelY = y;
-        pixelPosition = sf::Vector2i(x, y);
-        setPosition(pixelX*PIXEL_SIZE + PIXEL_BORDER_THICKNESS, pixelY*PIXEL_SIZE + PIXEL_BORDER_THICKNESS);
-    }
-
-    void setPixelPosition(sf::Vector2i vector)
-    {
-        setPixelPosition(vector.x, vector.y);
-    }
-
-    sf::Vector2i getPixelPosition() {return pixelPosition;}
-
-    bool isMeet(Pixel anotherPixel){
-        return getPosition().x == anotherPixel.getPosition().x && getPosition().y == anotherPixel.getPosition().y;
-    }
-};
-
-
-class BorderSquare : public Pixel 
-{
-public:
-    BorderSquare()
-    {
-        setOutlineColor(sf::Color::Cyan);
-        setFillColor(sf::Color::White);
-    }
-};
-
-class SnakePixel : public Pixel 
-{
-private:
-    sf::Vector2i direction = sf::Vector2i(-1, 0);
-    sf::Vector2i newDirection = sf::Vector2i(-1, 0);
-    bool isHead=false;
-
-public:
-    void markAsHead() {
-        isHead = true;
-        setFillColor(sf::Color::Yellow);
-    }
-
-    SnakePixel()
-    {
-        setOutlineColor(sf::Color::White);
-        setFillColor(sf::Color::Red);
-    }
-
-    SnakePixel(sf::Vector2i direct)
-    {
-        setOutlineColor(sf::Color::White);
-        setFillColor(sf::Color::Red);
-        direction = newDirection = direct;
-    }
-
-    void move()
-    {
-        const sf::Vector2i currntPosition = getPixelPosition();
-        const sf::Vector2i currentDirection = direction;
-
-        setPixelPosition(currntPosition + currentDirection);
-        direction = newDirection;
-    }
-
-    void setNewDirection(sf::Vector2i newDirect)
-    {
-        newDirection = newDirect;
-        if (isHead)
-            direction = newDirection;
-    }
-
-    sf::Vector2i getDirection() {return direction;}
-};
-
-class Food : public Pixel 
-{
-public:
-    Food()
-    {
-        setOutlineColor(sf::Color::White);
-        setFillColor(sf::Color::White);
-        relocate();
-    }
-
-    void relocate(){
-        setPixelPosition(rand() % (HRZ_PIXEL_COUNT - 2) + 1, rand() % (VRT_PIXEL_COUNT - 2) + 1);
-    }
-};
+#include "headers/border_pixel.h"
+#include "headers/snake_pixel.h"
+#include "headers/food_pixel.h"
 
 int main()
 {
@@ -130,7 +20,7 @@ int main()
 
     int tailLen;
     std::queue<SnakePixel> snake;
-    BorderSquare borders[2 * (HRZ_PIXEL_COUNT+VRT_PIXEL_COUNT)];
+    BorderPixel borders[2 * (HRZ_PIXEL_COUNT+VRT_PIXEL_COUNT)];
     Food food = Food();
 
     auto initialize = [&] () {
