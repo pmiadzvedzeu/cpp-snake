@@ -42,6 +42,15 @@ void SnakePixel::setNewDirection(sf::Vector2i newDirect)
         direction = newDirection;
 }
 
+bool SnakePixel::isOnSnake(Pixel pixel)
+{
+    for (int i = 0; i < SnakePixel::s_snakeLen; i++)
+        if (SnakePixel::s_snake[i].isMeet(pixel))
+            return true;
+    
+    return false;
+}
+
 sf::Vector2i    SnakePixel::getDirection()      {return direction;}
 SnakePixel*     SnakePixel::s_getSnake()        {return s_snake;}
 int             SnakePixel::s_getSnakeLen()     {return SnakePixel::s_snakeLen;}
