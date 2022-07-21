@@ -51,6 +51,16 @@ bool SnakePixel::isOnSnake(Pixel pixel)
     return false;
 }
 
+void SnakePixel::createInitial()
+{
+    SnakePixel::s_cleanLen();
+    for (int i = 0; i < DEF_SNAKE_LEN; i++)
+    {
+        SnakePixel();
+        SnakePixel::s_getSnake()[i].setPixelPosition(HRZ_PIXEL_COUNT/2 + i, VRT_PIXEL_COUNT/2);
+    }
+}
+
 sf::Vector2i    SnakePixel::getDirection()      {return direction;}
 SnakePixel*     SnakePixel::s_getSnake()        {return s_snake;}
 int             SnakePixel::s_getSnakeLen()     {return SnakePixel::s_snakeLen;}

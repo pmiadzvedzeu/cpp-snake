@@ -27,6 +27,7 @@ public:
     static SnakePixel s_getHead();
     static SnakePixel& s_getTail();
     static bool isOnSnake(Pixel pixel);
+    static void createInitial();
 };
 
 #endif /* SNAKE_PIXEL_H */

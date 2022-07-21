@@ -5,4 +5,4 @@
 #define VRT_PIXEL_COUNT             (WINDOW_HEIGHT/PIXEL_SIZE)
 #define PIXEL_BORDER_THICKNESS      2
 #define DEF_SNAKE_LEN               3
-#define SPEED                       150
+#define SPEED                       300

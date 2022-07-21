@@ -11,36 +11,19 @@
 
 int main()
 {
-    using namespace std::this_thread; // sleep_for, sleep_until
-    using namespace std::chrono; // nanoseconds, system_clock, seconds
-
+    using namespace std::this_thread;
+    using namespace std::chrono;
     srand (time(NULL));
 
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "The Snake");
 
-    BorderPixel borders[2 * (HRZ_PIXEL_COUNT+VRT_PIXEL_COUNT)];
     Food food = Food();
 
-    auto initialize = [&] () {
-        SnakePixel::s_cleanLen();
-        for (int i = 0; i < DEF_SNAKE_LEN; i++)
-        {
-            SnakePixel();
-            SnakePixel::s_getSnake()[i].setPixelPosition(HRZ_PIXEL_COUNT/2 + i, VRT_PIXEL_COUNT/2);
-        }
-
-        for(int i=0; i<HRZ_PIXEL_COUNT; i++)
-        {
-            borders[HRZ_PIXEL_COUNT+i].setPixelPosition(i, VRT_PIXEL_COUNT - 1);
-            borders[i].setPixelPosition(i, 0);
-        }
-        for(int i=0; i<VRT_PIXEL_COUNT; i++)
-        {
-            borders[2*HRZ_PIXEL_COUNT + VRT_PIXEL_COUNT+i].setPixelPosition(HRZ_PIXEL_COUNT-1, i);
-            borders[2*HRZ_PIXEL_COUNT + i].setPixelPosition(0, i);
-        }
-        food = Food();
-
+    auto initialize = [&] () 
+    {
+        SnakePixel::createInitial();
+        BorderPixel::s_createBorders();
+        food.relocate();
         return 0;
     };
 
@@ -77,6 +60,10 @@ int main()
                 break;
             }
 
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+                one_step_time+=2;
+            }
+
             sleep_for(milliseconds(1));
         }
 
@@ -86,7 +73,7 @@ int main()
 
         for(int i=0; i < 2*(HRZ_PIXEL_COUNT+VRT_PIXEL_COUNT); i++)
         {
-            window.draw(borders[i]);
+            window.draw(BorderPixel::s_getBorders()[i]);
         }
 
         for (size_t i = 0; i < SnakePixel::s_getSnakeLen(); i++)
@@ -112,7 +99,7 @@ int main()
         SnakePixel head = SnakePixel::s_getSnake()[0];
         for (size_t i = 0; i < 2*(HRZ_PIXEL_COUNT+VRT_PIXEL_COUNT); i++)
         {
-            if (borders[i].isMeet(head))
+            if (BorderPixel::s_getBorders()[i].isMeet(head))
                 initialize();
         }
 
