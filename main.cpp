@@ -76,14 +76,6 @@ int main()
             window.draw(BorderPixel::s_getBorders()[i]);
         }
 
-        for (size_t i = 0; i < SnakePixel::s_getSnakeLen(); i++)
-        {
-            if (i < SnakePixel::s_getSnakeLen() - 1)
-                SnakePixel::s_getSnake()[i+1].setNewDirection(SnakePixel::s_getSnake()[i].getDirection());
-            SnakePixel::s_getSnake()[i].move();
-            window.draw(SnakePixel::s_getSnake()[i]);
-        }
-
         if (food.isMeet(SnakePixel::s_getSnake()[0]))
         {
             SnakePixel oldTail = SnakePixel::s_getTail();
@@ -91,7 +83,14 @@ int main()
             SnakePixel(SnakePixel::s_getTail().getDirection());
             SnakePixel tail = SnakePixel::s_getTail();
             SnakePixel::s_getTail().setPixelPosition(oldTail.getPixelPosition() - tail.getDirection());
-            window.draw(SnakePixel::s_getTail());
+        }
+
+        for (size_t i = 0; i < SnakePixel::s_getSnakeLen(); i++)
+        {
+            if (i < SnakePixel::s_getSnakeLen() - 1)
+                SnakePixel::s_getSnake()[i+1].setNewDirection(SnakePixel::s_getSnake()[i].getDirection());
+            SnakePixel::s_getSnake()[i].move();
+            window.draw(SnakePixel::s_getSnake()[i]);
         }
 
         window.draw(food);
